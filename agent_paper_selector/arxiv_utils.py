@@ -6,16 +6,16 @@ import pymupdf4llm
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
-def fetch_papers(topic: str, max_results: int = 10) -> List[Dict]:
+def fetch_papers(topic: str, max_number_of_papers: int = 10) -> List[Dict]:
     """
     Fetch a number of papers from arxiv given a topic and a maximum number of them
-    :param topic:
-    :param max_results:
+    :param topic: The topic of the paper to download
+    :param max_number_of_papers: Maximum number of papers to download
     :return:
     """
     client = arxiv.Client()
     search = arxiv.Search(query=topic,
-                           max_results=max_results,
+                           max_results=max_number_of_papers,
                            sort_by=arxiv.SortCriterion.SubmittedDate)
     papers = []
     for result in client.results(search):

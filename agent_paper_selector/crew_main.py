@@ -18,8 +18,14 @@ class PaperSelector:
     output_filename: str
     user_context: str
     topic: str
-    max_results: int = 10
-    max_size_chunk: int = 4000
+    max_number_of_papers: Optional[int] = Field(
+        default=10,
+        description="The maximum number of papers to download from arxiv",
+    )
+    max_size_chunk: Optional[int] = Field(
+        default=8000,
+        description="Maximum size of the chunks that are used for summary",
+    )
     days_to_go_back_in_search: Optional[Any] = Field(
         default=1,
         description="the number of days to search papers. 1 day means to search only today, 2 days yesterday and today and so on",
@@ -98,7 +104,7 @@ class PaperSelector:
     def run(self):
         """Main function to execute the workflow using CrewAI"""
         # Step 1: Fetch Papers
-        papers = fetch_papers(self.topic, self.max_results)
+        papers = fetch_papers(self.topic, self.max_number_of_papers)
 
         # Step 2: Perform initial categorization based on abstract
         filtered_papers = []
@@ -151,6 +157,6 @@ if __name__ == "__main__":
                       "My order of preference is object detection, classification, segmentation and anomaly detection"
                       "Only get papers that presents a dataset or use deep learning."),
         output_filename="generated_data/papers.csv",
-        max_results=2
+        max_number_of_papers=2
     )
     selector.run()
