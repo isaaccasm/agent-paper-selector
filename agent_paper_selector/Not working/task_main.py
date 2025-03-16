@@ -4,7 +4,8 @@ from typing import Any, Dict, List, Optional
 from crewai import Crew, Task, Agent, Process
 import pandas as pd
 from pydantic import Field
-from arxiv_utils import fetch_papers, split_text, add_content_to_papers
+
+from agent_paper_selector.arxiv_utils import fetch_papers, split_text, add_content_to_papers
 from llm_utils.load_keys import load_open_ai_key
 
 
@@ -139,3 +140,4 @@ if __name__ == "__main__":
         max_results=5
     )
     selector.run()
+    Crew()

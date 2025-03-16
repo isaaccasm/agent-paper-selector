@@ -21,9 +21,9 @@ def fetch_papers(topic: str, max_results: int = 10) -> List[Dict]:
     for result in client.results(search):
         papers.append({
             "title": result.title,
-            "summary": result.summary,
+            "abstract": result.summary,
             "published": result.published.strftime("%Y-%m-%d"),
-            "id": result.entry_id
+            "id": os.path.basename(result.entry_id)
         })
     return papers
 
@@ -42,10 +42,15 @@ def add_content_to_papers(papers: List[Dict]) -> List[Dict]:
     """
     temporary_file = 'temporary_file.pdf'
     for paper in papers:
-        paper_obj = next(arxiv.Client().results(arxiv.Search(id_list=[paper['id']])))
-        paper_obj.download_pdf(filename=temporary_file)
+        try:
+            paper_obj = next(arxiv.Client().results(arxiv.Search(id_list=[paper['id']])))
+            paper_obj.download_pdf(filename=temporary_file)
+        except arxiv.HTTPError as e:
+            print(f"Paper id {paper['id']} not found")
+
         content = pymupdf4llm.to_markdown(temporary_file)
         paper['content'] = content
 
-    os.remove(temporary_file)
+    if os.path.exists(temporary_file):
+        os.remove(temporary_file)
     return papers
