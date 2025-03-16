@@ -118,7 +118,7 @@ class PaperSelector:
 
         # Step 4: Summarise the full content and perform classification again
         for paper in enriched_papers:
-            content = paper["content"]
+            content = paper.pop("content")
 
             # Chunk large content for summarization
             if len(content) > self.max_size_chunk:
@@ -150,7 +150,7 @@ if __name__ == "__main__":
                       "In addition, they need to be for general purpose and not for a specif domain like medicine. "
                       "My order of preference is object detection, classification, segmentation and anomaly detection"
                       "Only get papers that presents a dataset or use deep learning."),
-        output_filename="papers.csv",
+        output_filename="generated_data/papers.csv",
         max_results=2
     )
     selector.run()
