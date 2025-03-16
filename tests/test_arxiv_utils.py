@@ -38,7 +38,7 @@ class TestArxivFunctions(unittest.TestCase):
         mock_paper.download_pdf = MagicMock()
 
         mock_client_instance = mock_client.return_value
-        mock_client_instance.results.return_value = [mock_paper]
+        mock_client_instance.results.return_value = iter([mock_paper])
 
         # Mocking PDF to markdown conversion
         mock_to_markdown.return_value = "Extracted content from PDF"
@@ -49,7 +49,3 @@ class TestArxivFunctions(unittest.TestCase):
         self.assertEqual(len(enriched_papers), 1)
         self.assertIn("content", enriched_papers[0])
         self.assertEqual(enriched_papers[0]["content"], "Extracted content from PDF")
-
-
-if __name__ == '__main__':
-    unittest.main()
