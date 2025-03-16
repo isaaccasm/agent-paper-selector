@@ -1,10 +1,15 @@
-import csv
+import os
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from crewai import Crew, Task, Agent, Process
 import pandas as pd
 from pydantic import Field
 from arxiv_utils import fetch_papers, split_text, add_content_to_papers
+from llm_utils.load_keys import load_open_ai_key
+
+
+os.environ["OPENAI_MODEL_NAME"] = 'gpt-3.5-turbo' #'gpt-4o'
+load_open_ai_key()
 
 
 @dataclass
@@ -29,7 +34,7 @@ class PaperSelector:
             role="Research Paper Summariser",
             goal="Summarise academic papers efficiently.",
             backstory="Expert in academic literature, summarising research papers with key insights.",
-            verbose=True
+            verbose=True,
         )
 
         self.categorisation_agent = Agent(
@@ -42,8 +47,12 @@ class PaperSelector:
     def get_tasks(self):
         """Define CrewAI tasks"""
         self.summarisation_task = Task(
-            description=("Summarise the following research paper's content efficiently."
-                         "{text}"),
+            description=("Summarise the following research paper's content efficiently.\n\n "
+                         "{text}\n\n"
+                         "Get the main ideas, its pros and cons and how it compares to the state-of-the-art "
+                         "if provided. If there is any new type of deep layer or loss. If the paper presents a new"
+                         "dataset for a specific purpose then get the purpose, number of samples and number of samples "
+                         "per class."),
             agent=self.summarisation_agent,
             expected_output="A structured summary of each research paper.",
         )
@@ -96,10 +105,11 @@ class PaperSelector:
         enriched_papers = add_content_to_papers(initial_results)
 
         # Step 4: Summarise the full content
+        max_size_chunk = 4000
         for paper in enriched_papers:
             content = paper.pop("content")
-            if len(content) > 4000:
-                chunks = split_text(content)
+            if len(content) > max_size_chunk:
+                chunks = split_text(content, chunk_size=max_size_chunk)
                 chunk_summaries = [self.summarisation_task.execute(inputs={"text": chunk}) for chunk in chunks]
                 final_summary = " ".join(chunk_summaries)
             else:
@@ -123,7 +133,8 @@ if __name__ == "__main__":
         topic="computer vision",
         user_context=("I am interested in papers that present innovative and useful ideas. "
                       "In addition, they need to be for general purpose and not for a specif domain like medicine. "
-                      "My order of preference is object detection, classification, segmentation and anomaly detection"),
+                      "My order of preference is object detection, classification, segmentation and anomaly detection"
+                      "Only get papers that presents a dataset or use deep learning."),
         output_filename="papers.csv",
         max_results=5
     )
